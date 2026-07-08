@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mascot Sudoku Game</title>
     
     <!-- Preload critical images for instant loading -->
@@ -46,12 +46,8 @@
             background-size: cover;
             background-position: center center;
             background-repeat: no-repeat;
-            display: flex;
-            flex-direction: column;
-            width: 100vw; height: 100dvh; align-items: center; justify-content: space-between; overflow: hidden;
-    padding-top: env(safe-area-inset-top); /* 留出 iPhone 瀏海與動態島區域 */
-    padding-bottom: env(safe-area-inset-bottom); /* 留出底部底條區域 */
-    box-sizing: border-box; background-color: #f0f4f8;
+            background-attachment: scroll;
+            min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
         }
         .dark body {
             background-image: url('https://pfst.cf2.poecdn.net/base/image/d30322d9a06c847a19cb15125d70a62cc498ee88b3baf79b29f1e0f176811d43?w=1080&h=1920');
@@ -79,33 +75,9 @@
                 background-position: center center;
             }
         }
-
-/* 讓遊戲容器自動垂直置中並填滿，避免按鈕被切掉 */
-#gameContainer {
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    padding: 12px;
-    box-sizing: border-box;
-}
-
-#gameContainer:not(.hidden) {
-    display: flex;
-}
-
-/* 確保棋盤按比例縮放，高度絕不推擠到下方按鈕 */
-#sudokuGrid {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    max-height: 55vh; 
-    margin: auto;
-}
-
         .sudoku-cell {
             aspect-ratio: 1;
-            border: 1px solid #ddd; outline: none;
+            border: 1px solid #ddd;
         }
         .thick-border-right { border-right: 3px solid #ffa500; }
         .thick-border-bottom { border-bottom: 3px solid #ffa500; }
@@ -117,7 +89,7 @@
         .notes-text { 
             font-size: 8px; 
             line-height: 1;
-            display: grid; flex-wrap: wrap;
+            display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             grid-template-rows: 1fr 1fr 1fr;
             gap: 3px;
@@ -497,7 +469,7 @@
             }
         }
         .footer-credits {
-            position: absolute; bottom: 5px; width: 100%; text-align: center; gap: 8px; align-items: center; display: flex; 
+            bottom: 5px; width: 100%; left: 0; text-align: center; gap: 8px; align-items: center; display: flex; position: absolute; padding-top: 10px;
             font-size: clamp(0.5rem, 2.3vw, 0.6rem); color: #ffa500;
             letter-spacing: 0.15em; opacity: 0.6; z-index: 9000;  justify-content: center;
         }
@@ -558,6 +530,57 @@
     }
 }
 
+/* 自訂捲軸樣式 */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px; /* 捲軸寬度 */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent; /* 軌道背景透明 */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #fb923c; /* 預設顏色：Tailwind orange-400 */
+    border-radius: 10px; /* 圓角設計 */
+    border: 2px solid #ffffff; /* 產生內縮感，讓顏色更俐落 */
+}
+
+/* 深色模式下的處理 */
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #f97316; /* 深色模式下稍微深一點的橙色 */
+    border: 2px solid #1f2937; /* 深色模式下對應的背景色 (gray-800) */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #ea580c; /* 滑鼠懸停變深色 (orange-600) */
+}
+
+/* 1. 只有當遊戲主頁面被顯示（沒有 .hidden）時，才去約束棋盤的寬高比例 */
+        #gameContainer:not(.hidden) #sudokuGrid {
+            width: min(95vw, 48vh) !important;
+            height: min(95vw, 48vh) !important;
+            aspect-ratio: 1 / 1 !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+
+        /* 2. 格子與筆記等比例縮放 */
+        #gameContainer:not(.hidden) .sudoku-cell {
+            aspect-ratio: 1 / 1 !important;
+            font-size: clamp(0.9rem, 2.5vh, 1.5rem) !important;
+        }
+
+        #gameContainer:not(.hidden) .sudoku-cell .grid {
+            font-size: clamp(0.5rem, 1.1vh, 0.75rem) !important;
+        }
+
+        /* 3. 只有在進入遊戲頁面時（沒有 .hidden），才給予彈性容器高度 */
+        #gameContainer:not(.hidden) {
+            max-height: 95vh; 
+            display: flex !important;
+            flex-direction: column;
+            justify-content: space-between;
+        }
     </style>
 </head>
 <body class="bg-white dark:bg-gray-900 min-h-screen">
@@ -626,12 +649,13 @@
     </script>
 
     <!-- Difficulty Selection Modal -->
-    <div id="difficultyModal" role="dialog" aria-modal="true" aria-labelledby="mainTitle" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4 border-2 border-orange-500 dark:border-orange-400">
-        <div class="text-center mb-6">
-            <h1 id="mainTitle" class="text-3xl font-bold text-primary dark:text-orange-400 mb-2">Mascot Sudoku</h1>
-            <h2 class="text-lg font-semibold text-primary dark:text-orange-300">Choose Difficulty</h2>
-        </div>
+    <div id="difficultyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4 border-2 border-orange-500 dark:border-orange-400">
+            <!-- Main Title -->
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-bold text-primary dark:text-orange-400 mb-2">Mascot Sudoku</h1>
+                <h2 class="text-lg font-semibold text-primary dark:text-orange-300">Choose Difficulty</h2>
+            </div>
 
 
             
@@ -645,12 +669,12 @@
             <!-- Game Mode Buttons -->
             <div class="flex flex-col space-y-3 mb-4">
                 <button onclick="startGame('trial')" class="px-6 py-3 bg-green-500 dark:bg-green-600 text-white rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-colors shadow-md">
-                    🎯 4x4 Trial
+                    🎯 4x4 Trial Mode
                 </button>
-                <button onclick="startGame('six')" class="px-6 py-3 bg-primary dark:bg-orange-500 text-white rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-colors shadow-md">
+                <button onclick="startGame('six')" class="px-6 py-3 bg-red-600 dark:bg-red-700 text-white rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-colors shadow-md">
                     🔥 6x6 Mode
                 </button>
-                <button onclick="startGame('easy')" class="px-6 py-3 bg-red-600 dark:bg-red-700 text-white rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-colors shadow-md">
+                <button onclick="startGame('easy')" class="px-6 py-3 bg-primary dark:bg-orange-500 text-white rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-colors shadow-md">
                     🌟 9x9 Mode
                 </button>
             </div>
@@ -660,7 +684,7 @@
                 <!-- Explanation Text -->
                 <div class="text-center mb-3">
                     <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                        🏆 Win 10 6x6 & 9x9 mode games<br>
+                        🏆 Win 10 Easy & Hard mode games<br>
                         to unlock a special mascot gift!
                     </p>
                 </div>
@@ -680,13 +704,20 @@
                 </div>
             </div>
         </div>
+        <div class="footer-credits">
+            <span>Mascot Sudoku ©2026 Grafittiii</span>
+            <span class="footer-divider">|</span>
+            <a href="https://www.instagram.com/grafittiii_uru/" target="_blank" class="footer-link">Instagram</a>
+            <span class="footer-divider">|</span>
+            <a href="https://payme.hsbc/jlpl22" target="_blank" class="footer-link">請我喝奶茶~</a>
+        </div>
+
     </div>
 
     <!-- Game End Modal -->
-    <div id="gameEndModal" role="dialog" aria-modal="true" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-sm w-full mx-4 border-2 border-orange-500 dark:border-orange-400">
+    <div id="gameEndModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-sm w-full mx-4 border-2 border-orange-500 dark:border-orange-400 flex flex-col max-h-[85dvh] overflow-y-auto custom-scrollbar">
             <div id="gameEndContent" class="text-center">
-                <!-- Content will be populated by JavaScript -->
             </div>
             <div class="flex flex-col space-y-3 mt-6">
                 <button onclick="newGame()" class="px-6 py-3 bg-primary text-white rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-colors">
@@ -700,7 +731,7 @@
     </div>
 
     <!-- Pause Overlay -->
-    <div id="pauseOverlay" role="dialog" aria-modal="true" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div id="pauseOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <button onclick="togglePause()" class="px-8 py-4 bg-primary text-white rounded-lg text-xl font-bold hover:bg-opacity-90 transition-colors">
             ▶️ Resume
         </button>
@@ -856,16 +887,14 @@
                 </div>
             </button>
         </div>
-
-    </div>
         <div class="footer-credits">
             <span>Mascot Sudoku ©2026 Grafittiii</span>
             <span class="footer-divider">|</span>
             <a href="https://www.instagram.com/grafittiii_uru/" target="_blank" class="footer-link">Instagram</a>
             <span class="footer-divider">|</span>
             <a href="https://payme.hsbc/jlpl22" target="_blank" class="footer-link">請我喝奶茶~</a>
-
         </div>
+
 
     <script>
         // =============================================================================
@@ -908,7 +937,7 @@
                     console.clear();
                     console.log('%c🛡️ MASCOT SUDOKU - PROTECTED CONTENT', 'color: #E39F0E; font-size: 20px; font-weight: bold;');
                     console.log('%c⚠️ This application is protected by copyright.', 'color: red; font-size: 14px;');
-                    console.log('%c📧 Contact: IG@grafittiii_uru', 'color: blue; font-size: 12px;');
+                    console.log('%c📧 Contact: Available on Poe platform', 'color: blue; font-size: 12px;');
                 }
             } else {
                 devtools.open = false;
@@ -1036,7 +1065,7 @@
         // Pre-generated puzzle pool for instant loading
         let puzzlePool = {
             trial: [],    // 4x4 puzzles
-            six: [],     // six puzzles
+            six: [],     // 6x6 puzzles
             easy: [],     // 9x9 easy puzzles  
             generating: false,
             targetPoolSize: 3, // Keep 3 puzzles of each type ready
@@ -1046,7 +1075,7 @@
         // Victory tracking (session-only, resets on page refresh)
         let victoryStats = {
             trial: 0,    // 4x4 wins
-            six: 0,     // six wins
+            six: 0,     // 6x6 wins
             easy: 0,     // 9x9 easy wins  
             giftClaimed: false
         };
@@ -1270,8 +1299,8 @@
                             osc.stop(audioContext.currentTime + 1.0);
                         }, index * 150);
                     });
-                } else if (difficulty === 'six') {
-                    // Epic victory fanfare for six mode
+                } else if (difficulty === 'hard') {
+                    // Epic victory fanfare for hard mode
                     const epicNotes = [
                         [523, 659, 784], // C major chord
                         [587, 740, 880], // D major chord
@@ -1419,21 +1448,21 @@
         }
 
         // Check if a box is complete
-        function isBoxComplete(boxRow, boxCol) {
-            const numbers = new Set();
-            const size = gameState.gridSize;
-            const boxRows = size === 9 ? 3 : 2; // 宮格高度
-    const boxCols = size === 4 ? 2 : 3; // 宮格寬度
-            for (let r = boxRow; r < boxRow + boxSize; r++) {
-                for (let c = boxCol; c < boxCol + boxSize; c++) {
-                    const value = gameState.board[r][c];
-                    if (value === 0) return false;
-                    if (numbers.has(value)) return false;
-                    numbers.add(value);
-                }
-            }
-            return numbers.size === (boxSize * boxSize);
+function isBoxComplete(boxRowStart, boxColStart) {
+    const numbers = new Set();
+    const size = gameState.gridSize;
+    const boxRows = size === 9 ? 3 : 2; 
+    const boxCols = size === 4 ? 2 : 3; 
+    for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+        for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+            const value = gameState.board[r][c];
+            if (value === 0) return false;
+            if (numbers.has(value)) return false;
+            numbers.add(value);
         }
+    }
+    return numbers.size === (boxRows * boxCols);
+}
 
         // Create sparkle particles around completed sets
         function createSparkles(cells) {
@@ -1486,71 +1515,51 @@
         }
 
         // Check if placing a number will complete any row/column/box set
-        function willCompleteSet(row, col) {
-            const size = gameState.gridSize;
-            const boxRows = size === 9 ? 3 : 2; // 宮格高度
-    const boxCols = size === 4 ? 2 : 3; // 宮格寬度
-            
-            // Check if this placement will complete the row
-            if (isRowComplete(row)) return true;
-            
-            // Check if this placement will complete the column
-            if (isColumnComplete(col)) return true;
-            
-            // Check if this placement will complete the box
-            const boxRow = Math.floor(row / boxSize) * boxSize;
-            const boxCol = Math.floor(col / boxSize) * boxSize;
-            if (isBoxComplete(boxRow, boxCol)) return true;
-            
-            return false;
-        }
+function willCompleteSet(row, col) {
+    const size = gameState.gridSize;
+    if (isRowComplete(row)) return true;
+    if (isColumnComplete(col)) return true;
+    const boxRows = size === 9 ? 3 : 2; 
+    const boxCols = size === 4 ? 2 : 3; 
+    const boxRowStart = Math.floor(row / boxRows) * boxRows;
+    const boxColStart = Math.floor(col / boxCols) * boxCols;
+    return isBoxComplete(boxRowStart, boxColStart);
+}
 
         // Check for completed sets and animate them
-        function checkAndAnimateCompletions(lastRow, lastCol) {
-            const completedSets = [];
-            const size = gameState.gridSize;
-            const boxRows = size === 9 ? 3 : 2; // 宮格高度
-    const boxCols = size === 4 ? 2 : 3; // 宮格寬度
-            
-            // Check if the row was just completed
-            if (isRowComplete(lastRow)) {
-                const rowCells = [];
-                for (let col = 0; col < size; col++) {
-                    rowCells.push([lastRow, col]);
-                }
-                completedSets.push(rowCells);
+function checkAndAnimateCompletions(lastRow, lastCol) {
+    const completedSets = [];
+    const size = gameState.gridSize;
+    const boxRows = size === 9 ? 3 : 2; 
+    const boxCols = size === 4 ? 2 : 3; 
+    
+    if (isRowComplete(lastRow)) {
+        const rowCells = [];
+        for (let col = 0; col < size; col++) rowCells.push([lastRow, col]);
+        completedSets.push(rowCells);
+    }
+    if (isColumnComplete(lastCol)) {
+        const colCells = [];
+        for (let row = 0; row < size; row++) colCells.push([row, lastCol]);
+        completedSets.push(colCells);
+    }
+    
+    const boxRowStart = Math.floor(lastRow / boxRows) * boxRows;
+    const boxColStart = Math.floor(lastCol / boxCols) * boxCols;
+    if (isBoxComplete(boxRowStart, boxColStart)) {
+        const boxCells = [];
+        for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+            for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                boxCells.push([r, c]);
             }
-            
-            // Check if the column was just completed
-            if (isColumnComplete(lastCol)) {
-                const colCells = [];
-                for (let row = 0; row < size; row++) {
-                    colCells.push([row, lastCol]);
-                }
-                completedSets.push(colCells);
-            }
-            
-            // Check if the box was just completed
-            const boxRow = Math.floor(lastRow / boxSize) * boxSize;
-            const boxCol = Math.floor(lastCol / boxSize) * boxSize;
-            if (isBoxComplete(boxRow, boxCol)) {
-                const boxCells = [];
-                for (let r = boxRow; r < boxRow + boxSize; r++) {
-                    for (let c = boxCol; c < boxCol + boxSize; c++) {
-                        boxCells.push([r, c]);
-                    }
-                }
-                completedSets.push(boxCells);
-            }
-            
-            // Animate all completed sets
-            completedSets.forEach((cells, setIndex) => {
-                setTimeout(() => {
-                    animateCompletion(cells);
-                    // Sound is already played immediately when placing the number
-                }, setIndex * 300);
-            });
         }
+        completedSets.push(boxCells);
+    }
+    
+    completedSets.forEach((cells, setIndex) => {
+        setTimeout(() => animateCompletion(cells), setIndex * 300);
+    });
+}
 
         // Initialize game
         function initGame() {
@@ -1558,68 +1567,53 @@
             updateDisplay();
         }
 
-        function createGrid() {
-            const grid = document.getElementById('sudokuGrid');
-            grid.innerHTML = '';
+function createGrid() {
+    const grid = document.getElementById('sudokuGrid');
+    grid.innerHTML = '';
+    
+    const size = gameState.gridSize;
+    const baseClasses = 'grid gap-0 border-3 border-gridline rounded-lg overflow-hidden mb-2 bg-white dark:bg-gray-800';
+    if (size === 4) grid.className = `${baseClasses} grid-cols-4`;
+    else if (size === 6) grid.className = `${baseClasses} grid-cols-6`;
+    else grid.className = `${baseClasses} grid-cols-9`;
+    
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+            const cell = document.createElement('div');
+            cell.className = `sudoku-cell flex items-center justify-center text-primary font-bold text-lg cursor-pointer relative hover:bg-gray-100`;
+            cell.id = `cell-${row}-${col}`;
             
-            // Set grid layout based on grid size with predefined classes
-            const size = gameState.gridSize;
-            const baseClasses = 'grid gap-0 border-3 border-gridline rounded-lg overflow-hidden mb-2 bg-white dark:bg-gray-800';
-            if (size === 4) {
-                grid.className = `${baseClasses} grid-cols-4`;
+            if (size === 9) {
+                if (col === 2 || col === 5) cell.classList.add('thick-border-right');
+                if (row === 2 || row === 5) cell.classList.add('thick-border-bottom');
+                if (col === 0) cell.classList.add('thick-border-left');
+                if (row === 0) cell.classList.add('thick-border-top');
+                if (col === 8) cell.classList.add('thick-border-right');
+                if (row === 8) cell.classList.add('thick-border-bottom');
             } else if (size === 6) {
-                grid.className = `${baseClasses} grid-cols-6`;
-            } else {
-                grid.className = `${baseClasses} grid-cols-9`;
+                if (col === 2) cell.classList.add('thick-border-right');
+                if (row === 1 || row === 3) cell.classList.add('thick-border-bottom');
+                if (col === 0) cell.classList.add('thick-border-left');
+                if (row === 0) cell.classList.add('thick-border-top');
+                if (col === 5) cell.classList.add('thick-border-right');
+                if (row === 5) cell.classList.add('thick-border-bottom');
+            } else if (size === 4) {
+                if (col === 1) cell.classList.add('thick-border-right');
+                if (row === 1) cell.classList.add('thick-border-bottom');
+                if (col === 0) cell.classList.add('thick-border-left');
+                if (row === 0) cell.classList.add('thick-border-top');
+                if (col === 3) cell.classList.add('thick-border-right');
+                if (row === 3) cell.classList.add('thick-border-bottom');
             }
             
-            for (let row = 0; row < size; row++) {
-                for (let col = 0; col < size; col++) {
-                    const cell = document.createElement('div');
-                    cell.className = `sudoku-cell flex items-center justify-center text-primary font-bold text-lg cursor-pointer relative hover:bg-gray-100`;
-                    cell.id = `cell-${row}-${col}`;
-                    cell.tabIndex = 0; 
-                    cell.addEventListener('focus', () => selectCell(row, col));
-
-                    // Add thick borders for sub-boxes
-                    if (size === 9) {
-                        // 9x9 grid: 3x3 boxes
-                        if (col === 2 || col === 5) cell.classList.add('thick-border-right');
-                        if (row === 2 || row === 5) cell.classList.add('thick-border-bottom');
-                        if (col === 0) cell.classList.add('thick-border-left');
-                        if (row === 0) cell.classList.add('thick-border-top');
-                        if (col === 8) cell.classList.add('thick-border-right');
-                        if (row === 8) cell.classList.add('thick-border-bottom');
-                    } else if (size === 6) {
-                // six: 2列 x 3行 宮格
-                        if (col === 2) cell.classList.add('thick-border-right'); // 第3欄右側
-                        if (row === 1 || row === 3) cell.classList.add('thick-border-bottom'); // 第2,4列下方
-                        if (col === 0) cell.classList.add('thick-border-left');
-                        if (row === 0) cell.classList.add('thick-border-top');
-                        if (col === 5) cell.classList.add('thick-border-right');
-                        if (row === 5) cell.classList.add('thick-border-bottom');
-                    } else if (size === 4) {
-                        // 4x4 grid: 2x2 boxes
-                        if (col === 1) cell.classList.add('thick-border-right');
-                        if (row === 1) cell.classList.add('thick-border-bottom');
-                        if (col === 0) cell.classList.add('thick-border-left');
-                        if (row === 0) cell.classList.add('thick-border-top');
-                        if (col === 3) cell.classList.add('thick-border-right');
-                        if (row === 3) cell.classList.add('thick-border-bottom');
-                    }
-                    
-                    // Add both click and touch event listeners for gestures
-                    cell.addEventListener('click', () => selectCell(row, col));
-                    
-                    // Touch event listeners for gesture support
-                    cell.addEventListener('touchstart', (e) => handleTouchStart(e, row, col), { passive: false });
-                    cell.addEventListener('touchmove', handleTouchMove, { passive: false });
-                    cell.addEventListener('touchend', handleTouchEnd, { passive: false });
-                    
-                    grid.appendChild(cell);
-                }
-            }
+            cell.addEventListener('click', () => selectCell(row, col));
+            cell.addEventListener('touchstart', (e) => handleTouchStart(e, row, col), { passive: false });
+            cell.addEventListener('touchmove', handleTouchMove, { passive: false });
+            cell.addEventListener('touchend', handleTouchEnd, { passive: false });
+            grid.appendChild(cell);
         }
+    }
+}
 
         // Pre-generate a single puzzle for a given difficulty and grid size
         function generateSudokuPuzzle(difficulty, gridSize) {
@@ -1660,7 +1654,7 @@
             
             function createUniquePuzzleForGeneration(difficulty, size, solution) {
                 const maxCount = size;
-                const targetEmptyCount = difficulty === 'trial' ? 6 : (difficulty === 'easy' ? 40 : 55);
+                const targetEmptyCount = difficulty === 'trial' ? 6 : (difficulty === 'six' ? 14 : 40);
                 
                 // Start with complete solution
                 tempBoard = JSON.parse(JSON.stringify(solution));
@@ -1815,31 +1809,8 @@
             return solutionCount === 1;
         }
         
-        
-function isValidMove(board, row, col, num) {
-    const size = gameState.gridSize;
-    const boxRows = size === 9 ? 3 : 2; // 宮格高度
-    const boxCols = size === 4 ? 2 : 3; // 宮格寬度
-    
-    // Check row
-    for (let c = 0; c < size; c++) {
-        if (board[row][c] === num) return false;
-    }
-    
-    // Check column
-    for (let r = 0; r < size; r++) {
-        if (board[r][col] === num) return false;
-    }
-    
-    // Check box (非對稱宮格支援)
-    const boxRow = Math.floor(row / boxRows) * boxRows;
-    const boxCol = Math.floor(col / boxCols) * boxCols;
-    for (let r = boxRow; r < boxRow + boxRows; r++) {
-        for (let c = boxCol; c < boxCol + boxCols; c++) {
-            if (board[r][c] === num) return false;
-        }
-    }
-    return true;
+        function isValidMoveForGeneration(board, row, col, num, size) {
+    return isValidMoveForSize(board, row, col, num, size);
 }
 
         // Legacy function kept for compatibility
@@ -1874,7 +1845,7 @@ function isValidMove(board, row, col, num) {
         function createUniquePuzzle(difficulty) {
             const size = gameState.gridSize;
             const maxCount = size;
-            const targetEmptyCount = difficulty === 'trial' ? 6 : (difficulty === 'easy' ? 40 : 55);
+            const targetEmptyCount = difficulty === 'trial' ? 6 : (difficulty === 'six' ? 14 : 40);
             
             // Start with complete solution
             gameState.board = JSON.parse(JSON.stringify(gameState.solution));
@@ -1971,45 +1942,18 @@ function isValidMove(board, row, col, num) {
             return isUnique;
         }
         
-        function getStrategicWeight(row, col, size) {
-            // Higher weight = more likely to be removed
-            // Lower weight = more important to keep (strategic positions)
-            
-            const boxRows = size === 9 ? 3 : 2; // 宮格高度
-    const boxCols = size === 4 ? 2 : 3; // 宮格寬度
-            let weight = 1.0;
-            
-            // Corner cells are less strategic
-            if ((row === 0 || row === size - 1) && (col === 0 || col === size - 1)) {
-                weight += 0.3;
-            }
-            
-            // Edge cells are moderately strategic
-            if (row === 0 || row === size - 1 || col === 0 || col === size - 1) {
-                weight += 0.1;
-            }
-            
-            // Box centers are more strategic (keep these filled)
-            const boxRow = Math.floor(row / boxSize);
-            const boxCol = Math.floor(col / boxSize);
-            const inBoxRow = row % boxSize;
-            const inBoxCol = col % boxSize;
-            
-            if (size === 9) {
-                // For 3x3 boxes, center cells are strategic
-                if (inBoxRow === 1 && inBoxCol === 1) {
-                    weight -= 0.3; // Keep center cells
-                }
-            } else if (size === 4) {
-                // For 2x2 boxes, all positions are equally important
-                weight += 0.0;
-            }
-            
-            // Add some randomness
-            weight += Math.random() * 0.2;
-            
-            return weight;
-        }
+ function getStrategicWeight(row, col, size) {
+    const boxRows = size === 9 ? 3 : 2; 
+    const boxCols = size === 4 ? 2 : 3; 
+    let weight = 1.0;
+    if ((row === 0 || row === size - 1) && (col === 0 || col === size - 1)) weight += 0.3;
+    if (row === 0 || row === size - 1 || col === 0 || col === size - 1) weight += 0.1;
+    const inBoxRow = row % boxRows;
+    const inBoxCol = col % boxCols;
+    if (size === 9 && inBoxRow === 1 && inBoxCol === 1) weight -= 0.3;
+    weight += Math.random() * 0.2;
+    return weight;
+}
         
         function hasUniqueSolution(puzzle) {
             const size = gameState.gridSize;
@@ -2112,7 +2056,7 @@ function isValidMove(board, row, col, num) {
             for (let row = 0; row < size; row++) {
                 for (let col = 0; col < size; col++) {
                     if (board[row][col] === 0) {
-                        const numbers = size === 4 ? [1, 2, 3, 4] : [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                        const numbers = Array.from({length: size}, (_, i) => i + 1);
                         shuffleArray(numbers);
                         
                         for (const num of numbers) {
@@ -2129,26 +2073,15 @@ function isValidMove(board, row, col, num) {
             return true;
         }
         
-        function isValidMove(board, row, col, num) {
-    const size = gameState.gridSize;
-    const boxRows = size === 9 ? 3 : 2; // 宮格高度
-    const boxCols = size === 4 ? 2 : 3; // 宮格寬度
-    
-    // Check row
-    for (let c = 0; c < size; c++) {
-        if (board[row][c] === num) return false;
-    }
-    
-    // Check column
-    for (let r = 0; r < size; r++) {
-        if (board[r][col] === num) return false;
-    }
-    
-    // Check box (非對稱宮格支援)
-    const boxRow = Math.floor(row / boxRows) * boxRows;
-    const boxCol = Math.floor(col / boxCols) * boxCols;
-    for (let r = boxRow; r < boxRow + boxRows; r++) {
-        for (let c = boxCol; c < boxCol + boxCols; c++) {
+function isValidMoveForSize(board, row, col, num, size) {
+    const boxRows = size === 9 ? 3 : 2; 
+    const boxCols = size === 4 ? 2 : 3; 
+    for (let c = 0; c < size; c++) if (board[row][c] === num) return false;
+    for (let r = 0; r < size; r++) if (board[r][col] === num) return false;
+    const boxRowStart = Math.floor(row / boxRows) * boxRows;
+    const boxColStart = Math.floor(col / boxCols) * boxCols;
+    for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+        for (let c = boxColStart; c < boxColStart + boxCols; c++) {
             if (board[r][c] === num) return false;
         }
     }
@@ -2188,6 +2121,7 @@ function isValidMove(board, row, col, num) {
                     toGenerate.push({ difficulty: 'easy', gridSize: 9 });
                 }
             }
+            
             
             if (puzzlePool.six.length < puzzlePool.targetPoolSize) {
                 const needed = puzzlePool.targetPoolSize - puzzlePool.six.length;
@@ -2266,8 +2200,8 @@ function isValidMove(board, row, col, num) {
         function logPuzzlePoolStatus() {
             console.log('📊 === PUZZLE POOL STATUS ===');
             console.log(`  Trial (4x4): ${puzzlePool.trial.length}/${puzzlePool.targetPoolSize}`);
-            console.log(`  six (6x6):  ${puzzlePool.six.length}/${puzzlePool.targetPoolSize}`);
             console.log(`  Easy (9x9):  ${puzzlePool.easy.length}/${puzzlePool.targetPoolSize}`);
+            console.log(`  Hard (9x9):  ${puzzlePool.hard.length}/${puzzlePool.targetPoolSize}`);
             console.log(`  Generating:  ${puzzlePool.generating}`);
             console.log('============================');
         }
@@ -2277,7 +2211,7 @@ function isValidMove(board, row, col, num) {
             for (let row = 0; row < size; row++) {
                 for (let col = 0; col < size; col++) {
                     if (board[row][col] === 0) {
-                        const numbers = size === 4 ? [1, 2, 3, 4] : [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                        const numbers = Array.from({length: size}, (_, i) => i + 1);
                         shuffleArray(numbers);
                         
                         for (const num of numbers) {
@@ -2302,108 +2236,53 @@ function isValidMove(board, row, col, num) {
         }
 
         function isValidMove(board, row, col, num) {
+    		return isValidMoveForSize(board, row, col, num, gameState.gridSize);
+	}
+
+ function findExistingNumber(row, col, num) {
     const size = gameState.gridSize;
-    const boxRows = size === 9 ? 3 : 2; // 宮格高度
-    const boxCols = size === 4 ? 2 : 3; // 宮格寬度
-    
-    // Check row
-    for (let c = 0; c < size; c++) {
-        if (board[row][c] === num) return false;
-    }
-    
-    // Check column
-    for (let r = 0; r < size; r++) {
-        if (board[r][col] === num) return false;
-    }
-    
-    // Check box (非對稱宮格支援)
-    const boxRow = Math.floor(row / boxRows) * boxRows;
-    const boxCol = Math.floor(col / boxCols) * boxCols;
-    for (let r = boxRow; r < boxRow + boxRows; r++) {
-        for (let c = boxCol; c < boxCol + boxCols; c++) {
-            if (board[r][c] === num) return false;
+    for (let c = 0; c < size; c++) if (gameState.board[row][c] === num) return { row: row, col: c };
+    for (let r = 0; r < size; r++) if (gameState.board[r][col] === num) return { row: r, col: col };
+    const boxRows = size === 9 ? 3 : 2; 
+    const boxCols = size === 4 ? 2 : 3; 
+    const boxRowStart = Math.floor(row / boxRows) * boxRows;
+    const boxColStart = Math.floor(col / boxCols) * boxCols;
+    for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+        for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+            if (gameState.board[r][c] === num) return { row: r, col: c };
         }
     }
-    return true;
+    return null;
 }
 
-        function findExistingNumber(row, col, num) {
-            const size = gameState.gridSize;
-            const boxRows = size === 9 ? 3 : 2; // 宮格高度
-    const boxCols = size === 4 ? 2 : 3; // 宮格寬度
-            
-            // Check row for existing number
-            for (let c = 0; c < size; c++) {
-                if (gameState.board[row][c] === num) {
-                    return { row: row, col: c };
-                }
-            }
-            
-            // Check column for existing number
-            for (let r = 0; r < size; r++) {
-                if (gameState.board[r][col] === num) {
-                    return { row: r, col: col };
-                }
-            }
-            
-            // Check box for existing number
-            const boxRow = Math.floor(row / boxSize) * boxSize;
-            const boxCol = Math.floor(col / boxSize) * boxSize;
-            for (let r = boxRow; r < boxRow + boxSize; r++) {
-                for (let c = boxCol; c < boxCol + boxSize; c++) {
-                    if (gameState.board[r][c] === num) {
-                        return { row: r, col: c };
-                    }
-                }
-            }
-            
-            return null; // Number doesn't exist in row, column, or box
-        }
-
         // Remove number from notes in same row, column, and box when correctly placed
-        function removeNumberFromNotes(row, col, num) {
-            const size = gameState.gridSize;
-            const boxRows = size === 9 ? 3 : 2; // 宮格高度
-    const boxCols = size === 4 ? 2 : 3; // 宮格寬度
-            console.log(`Removing number ${num} from notes in row ${row}, column ${col}, and box`);
-            
-            // Remove from same row
-            for (let c = 0; c < size; c++) {
-                if (c !== col) { // Don't modify the cell we just placed the number in
-                    const noteIndex = gameState.notes[row][c].indexOf(num);
-                    if (noteIndex > -1) {
-                        gameState.notes[row][c].splice(noteIndex, 1);
-                        console.log(`Removed note ${num} from row ${row}, col ${c}`);
-                    }
-                }
-            }
-            
-            // Remove from same column
-            for (let r = 0; r < size; r++) {
-                if (r !== row) { // Don't modify the cell we just placed the number in
-                    const noteIndex = gameState.notes[r][col].indexOf(num);
-                    if (noteIndex > -1) {
-                        gameState.notes[r][col].splice(noteIndex, 1);
-                        console.log(`Removed note ${num} from row ${r}, col ${col}`);
-                    }
-                }
-            }
-            
-            // Remove from same box
-            const boxRow = Math.floor(row / boxSize) * boxSize;
-            const boxCol = Math.floor(col / boxSize) * boxSize;
-            for (let r = boxRow; r < boxRow + boxSize; r++) {
-                for (let c = boxCol; c < boxCol + boxSize; c++) {
-                    if (r !== row || c !== col) { // Don't modify the cell we just placed the number in
-                        const noteIndex = gameState.notes[r][c].indexOf(num);
-                        if (noteIndex > -1) {
-                            gameState.notes[r][c].splice(noteIndex, 1);
-                            console.log(`Removed note ${num} from row ${r}, col ${c} (box)`);
-                        }
-                    }
-                }
+function removeNumberFromNotes(row, col, num) {
+    const size = gameState.gridSize;
+    for (let c = 0; c < size; c++) {
+        if (c !== col) {
+            const noteIndex = gameState.notes[row][c].indexOf(num);
+            if (noteIndex > -1) gameState.notes[row][c].splice(noteIndex, 1);
+        }
+    }
+    for (let r = 0; r < size; r++) {
+        if (r !== row) {
+            const noteIndex = gameState.notes[r][col].indexOf(num);
+            if (noteIndex > -1) gameState.notes[r][col].splice(noteIndex, 1);
+        }
+    }
+    const boxRows = size === 9 ? 3 : 2; 
+    const boxCols = size === 4 ? 2 : 3; 
+    const boxRowStart = Math.floor(row / boxRows) * boxRows;
+    const boxColStart = Math.floor(col / boxCols) * boxCols;
+    for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+        for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+            if (r !== row || c !== col) {
+                const noteIndex = gameState.notes[r][c].indexOf(num);
+                if (noteIndex > -1) gameState.notes[r][c].splice(noteIndex, 1);
             }
         }
+    }
+}
 
         // Gesture support variables
         let gestureState = {
@@ -2596,68 +2475,52 @@ function isValidMove(board, row, col, num) {
             }, 1500);
         }
 
-        function selectCell(row, col) {
-            if (gameState.isPaused) return;
-            // 新增這段：確保點擊時，鍵盤焦點也同步移過來
-    const cellElement = document.getElementById(`cell-${row}-${col}`);
-    if (cellElement && document.activeElement !== cellElement) {
-        cellElement.focus({ preventScroll: true });
+function selectCell(row, col) {
+    if (gameState.isPaused) return;
+    if (!gestureState.isTouch) playClickSound();
+    
+    document.querySelectorAll('.sudoku-cell').forEach(cell => {
+        cell.classList.remove('highlight-cell', 'selected-cell', 'same-number-highlight');
+    });
+    
+    gameState.selectedCell = [row, col];
+    const size = gameState.gridSize;
+    const boxRows = size === 9 ? 3 : 2; 
+    const boxCols = size === 4 ? 2 : 3; 
+    const clickedCellValue = gameState.board[row][col];
+    
+    for (let i = 0; i < size; i++) {
+        const rowCell = document.getElementById(`cell-${row}-${i}`);
+        const colCell = document.getElementById(`cell-${i}-${col}`);
+        if (rowCell) rowCell.classList.add('highlight-cell');
+        if (colCell) colCell.classList.add('highlight-cell');
     }
-
-            // Play click sound only if not from gesture (gesture has its own sound)
-            if (!gestureState.isTouch) {
-                playClickSound();
-            }
-            
-            // Clear previous highlights and selected cell border
-            document.querySelectorAll('.sudoku-cell').forEach(cell => {
-                cell.classList.remove('highlight-cell', 'selected-cell', 'same-number-highlight');
-            });
-            
-            gameState.selectedCell = [row, col];
-            
-            const size = gameState.gridSize;
-            const boxRows = size === 9 ? 3 : 2; // 宮格高度
-    const boxCols = size === 4 ? 2 : 3; // 宮格寬度
-            const clickedCellValue = gameState.board[row][col];
-            
-            // Highlight row, column, and box
-            for (let i = 0; i < size; i++) {
-                const rowCell = document.getElementById(`cell-${row}-${i}`);
-                const colCell = document.getElementById(`cell-${i}-${col}`);
-                if (rowCell) rowCell.classList.add('highlight-cell');
-                if (colCell) colCell.classList.add('highlight-cell');
-            }
-            
-            const boxRow = Math.floor(row / boxSize) * boxSize;
-            const boxCol = Math.floor(col / boxSize) * boxSize;
-            for (let r = boxRow; r < boxRow + boxSize; r++) {
-                for (let c = boxCol; c < boxCol + boxSize; c++) {
-                    const boxCell = document.getElementById(`cell-${r}-${c}`);
-                    if (boxCell) boxCell.classList.add('highlight-cell');
-                }
-            }
-            
-            // Add orange border to the selected cell
-            document.getElementById(`cell-${row}-${col}`).classList.add('selected-cell');
-            
-            // NEW FEATURE: If the clicked cell contains a number (prefilled or correctly filled), 
-            // highlight all cells containing the same number across the entire grid
-            if (clickedCellValue !== 0) {
-                console.log(`🔍 Highlighting all cells with number ${clickedCellValue}`);
-                for (let r = 0; r < size; r++) {
-                    for (let c = 0; c < size; c++) {
-                        if (gameState.board[r][c] === clickedCellValue) {
-                            const cellElement = document.getElementById(`cell-${r}-${c}`);
-                            if (cellElement) {
-                                cellElement.classList.add('same-number-highlight');
-                            }
-                        }
-                    }
+    
+    const boxRowStart = Math.floor(row / boxRows) * boxRows;
+    const boxColStart = Math.floor(col / boxCols) * boxCols;
+    for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+        for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+            const boxCell = document.getElementById(`cell-${r}-${c}`);
+            if (boxCell) boxCell.classList.add('highlight-cell');
+        }
+    }
+    
+    document.getElementById(`cell-${row}-${col}`).classList.add('selected-cell');
+    
+    if (clickedCellValue !== 0) {
+        console.log(`🔍 Highlighting all cells with number ${clickedCellValue}`);
+        for (let r = 0; r < size; r++) {
+            for (let c = 0; c < size; c++) {
+                if (gameState.board[r][c] === clickedCellValue) {
+                    const cellElement = document.getElementById(`cell-${r}-${c}`);
+                    if (cellElement) cellElement.classList.add('same-number-highlight');
                 }
             }
         }
+    }
+}
 
+               
         function countNumberOccurrences(num) {
             let count = 0;
             let positions = [];
@@ -2688,9 +2551,6 @@ function isValidMove(board, row, col, num) {
                     // 4x4 trial mode: larger gap between 4 buttons that span full width
                     numberContainer.className = 'flex gap-2';
                     console.log('🎯 4x4 mode: 4 buttons spanning full width with larger gap');
-                } else if (size === 6) {
-            numberContainer.className = 'flex gap-2'; // 6個按鈕，中等空隙
-		console.log('🎮 six mode: 6 buttons spanning full width');
                 } else {
                     // 9x9 modes: smaller gap between 9 buttons that span full width
                     numberContainer.className = 'flex gap-1';
@@ -3344,8 +3204,7 @@ function isValidMove(board, row, col, num) {
             if (gameState.board[row][col] !== 0) return []; // Cell already filled
             
             const size = gameState.gridSize;
-            const boxRows = size === 9 ? 3 : 2; // 宮格高度
-    const boxCols = size === 4 ? 2 : 3; // 宮格寬度
+            const boxSize = size === 4 ? 2 : 3;
             const possible = [];
             
             for (let num = 1; num <= size; num++) {
@@ -3382,137 +3241,80 @@ function isValidMove(board, row, col, num) {
         }
 
         // Find hidden singles (numbers that can only go in one cell within a row/column/box)
-        function findHiddenSingles() {
-            const size = gameState.gridSize;
-            const boxRows = size === 9 ? 3 : 2; // 宮格高度
-    const boxCols = size === 4 ? 2 : 3; // 宮格寬度
-            const hiddenSingles = [];
-            
-            // Check rows
-            for (let row = 0; row < size; row++) {
-                for (let num = 1; num <= size; num++) {
-                    // Skip if number already exists in this row
-                    let numberExists = false;
-                    for (let col = 0; col < size; col++) {
-                        if (gameState.board[row][col] === num) {
-                            numberExists = true;
-                            break;
-                        }
-                    }
-                    if (numberExists) continue;
-                    
-                    // Find possible positions for this number in this row
-                    const possibleCols = [];
-                    for (let col = 0; col < size; col++) {
-                        if (gameState.board[row][col] === 0 && gameState.initialBoard[row][col] === 0) {
-                            if (isValidMove(gameState.board, row, col, num)) {
-                                possibleCols.push(col);
-                            }
-                        }
-                    }
-                    
-                    if (possibleCols.length === 1) {
-                        hiddenSingles.push({
-                            row, col: possibleCols[0],
-                            number: num,
-                            technique: 'Hidden Single (Row)',
-                            explanation: `${num} can only go here in row ${row + 1}`
-                        });
-                    }
-                }
-            }
-            
-            // Check columns
+function findHiddenSingles() {
+    const size = gameState.gridSize;
+    const boxRows = size === 9 ? 3 : 2; 
+    const boxCols = size === 4 ? 2 : 3; 
+    const hiddenSingles = [];
+    
+    for (let row = 0; row < size; row++) {
+        for (let num = 1; num <= size; num++) {
+            let numberExists = false;
+            for (let col = 0; col < size; col++) if (gameState.board[row][col] === num) { numberExists = true; break; }
+            if (numberExists) continue;
+            const possibleCols = [];
             for (let col = 0; col < size; col++) {
-                for (let num = 1; num <= size; num++) {
-                    // Skip if number already exists in this column
-                    let numberExists = false;
-                    for (let row = 0; row < size; row++) {
-                        if (gameState.board[row][col] === num) {
-                            numberExists = true;
-                            break;
-                        }
-                    }
-                    if (numberExists) continue;
-                    
-                    // Find possible positions for this number in this column
-                    const possibleRows = [];
-                    for (let row = 0; row < size; row++) {
-                        if (gameState.board[row][col] === 0 && gameState.initialBoard[row][col] === 0) {
-                            if (isValidMove(gameState.board, row, col, num)) {
-                                possibleRows.push(row);
-                            }
-                        }
-                    }
-                    
-                    if (possibleRows.length === 1) {
-                        // Check if this hint is already found by row analysis
-                        const alreadyFound = hiddenSingles.some(h => 
-                            h.row === possibleRows[0] && h.col === col && h.number === num
-                        );
-                        if (!alreadyFound) {
-                            hiddenSingles.push({
-                                row: possibleRows[0], col,
-                                number: num,
-                                technique: 'Hidden Single (Column)',
-                                explanation: `${num} can only go here in column ${col + 1}`
-                            });
-                        }
-                    }
+                if (gameState.board[row][col] === 0 && gameState.initialBoard[row][col] === 0) {
+                    if (isValidMove(gameState.board, row, col, num)) possibleCols.push(col);
                 }
             }
-            
-            // Check boxes
-            for (let boxRow = 0; boxRow < size; boxRow += boxSize) {
-                for (let boxCol = 0; boxCol < size; boxCol += boxSize) {
-                    for (let num = 1; num <= size; num++) {
-                        // Skip if number already exists in this box
-                        let numberExists = false;
-                        for (let r = boxRow; r < boxRow + boxSize; r++) {
-                            for (let c = boxCol; c < boxCol + boxSize; c++) {
-                                if (gameState.board[r][c] === num) {
-                                    numberExists = true;
-                                    break;
-                                }
-                            }
-                            if (numberExists) break;
-                        }
-                        if (numberExists) continue;
-                        
-                        // Find possible positions for this number in this box
-                        const possiblePositions = [];
-                        for (let r = boxRow; r < boxRow + boxSize; r++) {
-                            for (let c = boxCol; c < boxCol + boxSize; c++) {
-                                if (gameState.board[r][c] === 0 && gameState.initialBoard[r][c] === 0) {
-                                    if (isValidMove(gameState.board, r, c, num)) {
-                                        possiblePositions.push([r, c]);
-                                    }
-                                }
-                            }
-                        }
-                        
-                        if (possiblePositions.length === 1) {
-                            const [row, col] = possiblePositions[0];
-                            // Check if this hint is already found by row/column analysis
-                            const alreadyFound = hiddenSingles.some(h => 
-                                h.row === row && h.col === col && h.number === num
-                            );
-                            if (!alreadyFound) {
-                                const boxNumber = Math.floor(boxRow / boxSize) * (size / boxSize) + Math.floor(boxCol / boxSize) + 1;
-                                hiddenSingles.push({
-                                    row, col,
-                                    number: num,
-                                    technique: 'Hidden Single (Box)',
-                                    explanation: `${num} can only go here in box ${boxNumber}`
-                                });
-                            }
-                        }
-                    }
-                }
+            if (possibleCols.length === 1) {
+                hiddenSingles.push({ row, col: possibleCols[0], number: num, technique: 'Hidden Single (Row)', explanation: `${num} can only go here in row ${row + 1}` });
             }
-            
-            return hiddenSingles;
         }
+    }
+    
+    for (let col = 0; col < size; col++) {
+        for (let num = 1; num <= size; num++) {
+            let numberExists = false;
+            for (let row = 0; row < size; row++) if (gameState.board[row][col] === num) { numberExists = true; break; }
+            if (numberExists) continue;
+            const possibleRows = [];
+            for (let row = 0; row < size; row++) {
+                if (gameState.board[row][col] === 0 && gameState.initialBoard[row][col] === 0) {
+                    if (isValidMove(gameState.board, row, col, num)) possibleRows.push(row);
+                }
+            }
+            if (possibleRows.length === 1) {
+                const alreadyFound = hiddenSingles.some(h => h.row === possibleRows[0] && h.col === col && h.number === num);
+                if (!alreadyFound) hiddenSingles.push({ row: possibleRows[0], col, number: num, technique: 'Hidden Single (Column)', explanation: `${num} can only go here in column ${col + 1}` });
+            }
+        }
+    }
+    
+    for (let boxRowStart = 0; boxRowStart < size; boxRowStart += boxRows) {
+        for (let boxColStart = 0; boxColStart < size; boxColStart += boxCols) {
+            for (let num = 1; num <= size; num++) {
+                let numberExists = false;
+                for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+                    for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                        if (gameState.board[r][c] === num) { numberExists = true; break; }
+                    }
+                    if (numberExists) break;
+                }
+                if (numberExists) continue;
+                
+                const possiblePositions = [];
+                for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+                    for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                        if (gameState.board[r][c] === 0 && gameState.initialBoard[r][c] === 0) {
+                            if (isValidMove(gameState.board, r, c, num)) possiblePositions.push([r, c]);
+                        }
+                    }
+                }
+                if (possiblePositions.length === 1) {
+                    const [row, col] = possiblePositions[0];
+                    const alreadyFound = hiddenSingles.some(h => h.row === row && h.col === col && h.number === num);
+                    if (!alreadyFound) {
+                        const boxNumber = Math.floor(boxRowStart / boxRows) * (size / boxCols) + Math.floor(boxColStart / boxCols) + 1;
+                        hiddenSingles.push({ row, col, number: num, technique: 'Hidden Single (Box)', explanation: `${num} can only go here in box ${boxNumber}` });
+                    }
+                }
+            }
+        }
+    }
+    return hiddenSingles;
+}
 
         function useHint() {
             if (gameState.hints === 0 || gameState.isPaused) return;
@@ -3662,11 +3464,7 @@ function isValidMove(board, row, col, num) {
             const btn = document.getElementById('pauseBtn');
             const gameContainer = document.getElementById('gameContainer');
             const pauseOverlay = document.getElementById('pauseOverlay');
-            document.getElementById('pauseOverlay').classList.remove('hidden');
-// 顯示後，順手把焦點移給 "Resume" 按鈕
-const resumeBtn = document.querySelector('#pauseOverlay button');
-if (resumeBtn) resumeBtn.focus();
-
+            
             if (gameState.isPaused) {
                 btn.textContent = '▶';
                 gameState.pausedTime = Date.now() - gameState.startTime;
@@ -3714,7 +3512,7 @@ if (resumeBtn) resumeBtn.focus();
                 };
                 
                 // Check for gift eligibility
-                const total9x9Wins = victoryStats.easy + victoryStats.six;
+                const total9x9Wins = victoryStats.easy + victoryStats.hard;
                 let giftMessage = '';
                 
                 if (total9x9Wins >= 10 && !victoryStats.giftClaimed) {
@@ -3771,7 +3569,7 @@ if (resumeBtn) resumeBtn.focus();
                         </div>
                         
                         <div class="mt-3 text-xs text-primary">
-                            <p>Victory Count: 9x9 ${victoryStats.easy} | 9x9 ${victoryStats.six}</p>
+                            <p>Victory Count: Easy ${victoryStats.easy} | Hard ${victoryStats.hard}</p>
                             <p>Total 9x9 Wins: ${total9x9Wins}/10 for gift</p>
                         </div>
                         ${giftMessage}
@@ -3809,15 +3607,15 @@ if (resumeBtn) resumeBtn.focus();
             }
             
             gameState.difficulty = difficulty;
-            gameState.gridSize = difficulty === 'trial' ? 4 : 9;
+            gameState.gridSize = difficulty === 'trial' ? 4 : (difficulty === 'six' ? 6 : 9);
             
             // Set lives and hints based on difficulty
             if (difficulty === 'easy') {
                 gameState.lives = 5;  // Easy mode gets more lives
                 gameState.hints = 5;  // Easy mode gets more hints
             } else {
-                gameState.lives = 3;  // Trial and six mode
-                gameState.hints = 2;  // Trial and six mode
+                gameState.lives = 3;  // Trial and Hard mode
+                gameState.hints = 2;  // Trial and Hard mode
             }
             gameState.isPaused = false;
             gameState.notesMode = false;
@@ -3904,8 +3702,6 @@ if (resumeBtn) resumeBtn.focus();
             document.getElementById('difficultyModal').classList.add('hidden');
             document.getElementById('gameContainer').classList.remove('hidden');
             document.getElementById('gameEndModal').classList.add('hidden');
-const newGameBtn = document.querySelector('#gameEndModal button');
-if (newGameBtn) newGameBtn.focus();
             
             // Reset notes button
             const status = document.getElementById('notesStatus');
@@ -3952,8 +3748,8 @@ if (newGameBtn) newGameBtn.focus();
                 gameState.lives = 5;  // Easy mode gets more lives
                 gameState.hints = 5;  // Easy mode gets more hints
             } else {
-                gameState.lives = 3;  // Trial and six mode
-                gameState.hints = 2;  // Trial and six mode
+                gameState.lives = 3;  // Trial and Hard mode
+                gameState.hints = 2;  // Trial and Hard mode
             }
             gameState.isPaused = false;
             gameState.notesMode = false;
@@ -3983,7 +3779,7 @@ if (newGameBtn) newGameBtn.focus();
 
         // Simplified gift button click handler
         function handleSimplifiedGiftClick() {
-            const total9x9Wins = victoryStats.easy + victoryStats.six;
+            const total9x9Wins = victoryStats.easy + victoryStats.hard;
             
             console.log('🎁 === Gift Button Clicked ===');
             console.log(`Total 9x9 wins: ${total9x9Wins}`);
@@ -4011,7 +3807,7 @@ if (newGameBtn) newGameBtn.focus();
 
         // Update gift button display and styling
         function updateGiftButtonDisplay() {
-            const total9x9Wins = victoryStats.easy + victoryStats.six;
+            const total9x9Wins = victoryStats.easy + victoryStats.hard;
             const giftButton = document.getElementById('giftButton');
             
             if (!giftButton) return;
@@ -4394,15 +4190,14 @@ if (newGameBtn) newGameBtn.focus();
                         
                         <!-- Stats -->
                         <div class="grid grid-cols-2 gap-3 mb-6">
-                            <div class="bg-red-100 dark:bg-red-900 rounded p-3 text-center">
-                                <div class="text-xs font-bold text-red-600 dark:text-red-400 mb-1">six</div>
-                                <div class="text-2xl font-bold text-primary">${victoryStats.six}</div>
-                            </div>
                             <div class="bg-orange-100 dark:bg-orange-900 rounded p-3 text-center">
                                 <div class="text-xs font-bold text-orange-600 dark:text-orange-400 mb-1">Easy</div>
                                 <div class="text-2xl font-bold text-primary">${victoryStats.easy}</div>
                             </div>
-
+                            <div class="bg-red-100 dark:bg-red-900 rounded p-3 text-center">
+                                <div class="text-xs font-bold text-red-600 dark:text-red-400 mb-1">Hard</div>
+                                <div class="text-2xl font-bold text-primary">${victoryStats.hard}</div>
+                            </div>
                         </div>
                         
 
@@ -4415,6 +4210,11 @@ if (newGameBtn) newGameBtn.focus();
                 </div>
             `;
             document.body.appendChild(modal);
+// 👇 新增這段：彈出進度頁面後，自動將鍵盤焦點移到「Close」按鈕上
+            setTimeout(() => {
+                const closeBtn = modal.querySelector('button[onclick*="remove()"]');
+                if (closeBtn) closeBtn.focus();
+            }, 50);
         }
 
         // Update preload progress display
@@ -5959,37 +5759,88 @@ document.onkeydown = (e) => {
         return false;
     }
 };
-
+        
 // =============================================================================
-// ⌨️ KEYBOARD & DESKTOP SUPPORT (Number Pad, Tab, Arrows)
+// ⌨️ 智慧鍵盤與無障礙管理器 (Smart Keyboard & Accessibility Manager)
 // =============================================================================
 document.addEventListener('keydown', (e) => {
-    // 如果遊戲暫停、或者還在首頁(Modal開啟狀態)，則忽略鍵盤輸入
-    const gameContainer = document.getElementById('gameContainer');
-    if (!gameContainer || gameContainer.classList.contains('hidden') || gameState.isPaused) {
-        return;
+    // 1. 偵測目前是否有 Modal 正在顯示 (包含動態生成的 progressModal)
+    const modals = [
+        document.getElementById('difficultyModal'),
+        document.getElementById('gameEndModal'),
+        document.getElementById('pauseOverlay'),
+        document.getElementById('progressModal')
+    ];
+    
+    // 尋找第一個確實存在、且沒有被 hidden 隱藏的 Modal
+    const activeModal = modals.find(modal => modal && !modal.classList.contains('hidden'));
+
+    // ==== 【模式 A：Modal 開啟中 (安全焦點鎖定 Focus Trap)】 ====
+    if (activeModal) {
+        if (e.key === 'Tab') {
+            // 只抓取「看得到」且「未被禁用」的可互動元素
+            const focusableElements = Array.from(activeModal.querySelectorAll('button, a, input, [tabindex]:not([tabindex="-1"])'))
+                .filter(el => !el.disabled && el.offsetParent !== null);
+
+            if (focusableElements.length === 0) return;
+
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            // 核心安全機制：如果焦點不小心掉到 Modal 外面，強制抓回第一個元素
+            if (!activeModal.contains(document.activeElement)) {
+                firstElement.focus();
+                e.preventDefault();
+                return;
+            }
+
+            // 處理 Shift + Tab (倒退選取)
+            if (e.shiftKey && document.activeElement === firstElement) {
+                lastElement.focus();
+                e.preventDefault();
+            } 
+            // 處理單純 Tab (正向選取)
+            else if (!e.shiftKey && document.activeElement === lastElement) {
+                firstElement.focus();
+                e.preventDefault();
+            }
+        }
+        // 如果是在 Modal 裡面按 Enter 或上下左右，就交給瀏覽器原生處理，我們不干涉
+        return; 
     }
 
-    // 1. 數字鍵盤輸入 (包含上方數字列與右側 Number Pad)
+    // ==== 【模式 B：遊戲進行中 (網格導航與數字輸入)】 ====
+    // 確保遊戲容器是顯示的，且遊戲未暫停
+    const gameContainer = document.getElementById('gameContainer');
+    if (!gameContainer || gameContainer.style.display === 'none' || gameState.isPaused) return;
+
+    // 1. 數字鍵盤輸入 (1-9) -> 自動填入選取的格子
     if (/^[1-9]$/.test(e.key)) {
         const num = parseInt(e.key, 10);
-        // 確保輸入的數字不超過當前棋盤大小 (例如 4x4 模式不能輸入 5)
-        if (num <= gameState.gridSize) {
+        if (num <= gameState.gridSize && gameState.selectedCell) {
             selectNumber(num);
+            e.preventDefault();
         }
     } 
-    // 2. 刪除與倒退鍵 (Backspace / Delete)
+    // 2. 刪除與倒退鍵 (Backspace / Delete) -> 清除該格數字
     else if (e.key === 'Backspace' || e.key === 'Delete') {
         erase();
+        e.preventDefault();
     }
-    // 3. 復原快捷鍵 (Ctrl+Z 或 Cmd+Z)
+    // 3. 復原 (Ctrl+Z 或 Cmd+Z)
     else if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
         undo();
         e.preventDefault();
     }
-    // 4. 方向鍵導覽 (讓桌機玩家可以直接用方向鍵移動格子)
+    // 4. 方向鍵導覽 (Arrow Keys) -> 順滑移動格子
     else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        if (!gameState.selectedCell) return;
+        e.preventDefault(); // 防止網頁跟著方向鍵捲動
+
+        // 如果玩家還沒選取任何格子就按方向鍵，預設選取左上角 (0, 0)
+        if (!gameState.selectedCell) {
+            selectCell(0, 0);
+            return;
+        }
         
         let [r, c] = gameState.selectedCell;
         const maxIndex = gameState.gridSize - 1;
@@ -5999,73 +5850,16 @@ document.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowLeft') c = Math.max(0, c - 1);
         if (e.key === 'ArrowRight') c = Math.min(maxIndex, c + 1);
         
-        // 將焦點移至新格子，觸發 focus 事件，進而觸發 selectCell
-        const nextCell = document.getElementById(`cell-${r}-${c}`);
-        if (nextCell) {
-            nextCell.focus();
-            e.preventDefault(); // 防止網頁跟著方向鍵捲動
-        }
+        selectCell(r, c); // 呼叫你的 selectCell，它裡面已經有完美的 focus() 邏輯了
     }
 });
 
-// =============================================================================
-// 🔒 MODAL FOCUS TRAP (彈出視窗焦點鎖定，防止鍵盤選取到背後元素)
-// =============================================================================
-document.addEventListener('keydown', (e) => {
-    // 我們只處理 Tab 鍵
-    if (e.key !== 'Tab') return;
-
-    // 定義你網頁中所有的 Modal ID
-    const modalIds = ['difficultyModal', 'gameEndModal', 'pauseOverlay'];
-    let activeModal = null;
-
-    // 自動找出目前「正顯示中（沒有 hidden 類別）」的 Modal
-    for (const id of modalIds) {
-        const modal = document.getElementById(id);
-        if (modal && !modal.classList.contains('hidden')) {
-            activeModal = modal;
-            break;
-        }
-    }
-
-    // 如果目前畫面上沒有任何 Modal 開啟，就維持正常的 Tab 行為，不作干涉
-    if (!activeModal) return;
-
-    // 找出目前開啟的 Modal 內，所有可以被 Tab 選取的互動元素
-    const selectors = 'button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])';
-    const focusableElements = Array.from(activeModal.querySelectorAll(selectors));
-
-    // 如果 Modal 內沒有可點擊的東西（極少見），直接阻止預設行為
-    if (focusableElements.length === 0) {
-        e.preventDefault();
-        return;
-    }
-
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-
-    // 🔥 核心安全機制：如果焦點不小心跑到 Modal 外面（例如剛開起視窗時）
-    // 按下 Tab 鍵會強制把焦點抓回 Modal 的第一個按鈕，防止穿透到背景
-    if (!focusableElements.includes(document.activeElement)) {
-        firstElement.focus();
-        e.preventDefault();
-        return;
-    }
-
-    // 處理 Shift + Tab (倒退選取) -> 如果在第一個元素按倒退，就跳到最後一個
-    if (e.shiftKey) {
-        if (document.activeElement === firstElement) {
-            lastElement.focus();
-            e.preventDefault();
-        }
-    } 
-    // 處理單純按 Tab (正向選取) -> 如果在最後一個元素按 Tab，就繞回第一個
-    else {
-        if (document.activeElement === lastElement) {
-            firstElement.focus();
-            e.preventDefault();
-        }
-    }
+// 網頁載入完成後，自動將焦點移至難度選擇的第一個按鈕 (Theme 切換按鈕)
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const firstBtn = document.getElementById('mainThemeToggle');
+        if (firstBtn) firstBtn.focus();
+    }, 100);
 });
 
 console.log("%c停！別看我的原始碼，快去玩吧！", "color: blue; font-size: 30px; font-weight: bold;");
