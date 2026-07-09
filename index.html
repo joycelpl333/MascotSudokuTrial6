@@ -42,7 +42,7 @@
     <style>
         body { 
             font-family: serif;
-            background-image: url('https://pfst.cf2.poecdn.net/base/image/905456f0a4025bd3c63cb9b8c21509409f84d8e61dcace4bd314916c922e84ad?w=1080&h=1920');
+            background-image: url('https://i.urusai.cc/h26gy.jpg');
             background-size: cover;
             background-position: center center;
             background-repeat: no-repeat;
@@ -50,7 +50,7 @@
             min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
         }
         .dark body {
-            background-image: url('https://pfst.cf2.poecdn.net/base/image/d30322d9a06c847a19cb15125d70a62cc498ee88b3baf79b29f1e0f176811d43?w=1080&h=1920');
+            background-image: url('https://i.urusai.cc/PjGT3.jpg');
         }
         
         /* Responsive background adjustments */
@@ -75,6 +75,13 @@
                 background-position: center center;
             }
         }
+
+.body-no-scroll {
+    overflow: hidden !important;
+    height: 100dvh !important;
+    position: fixed;
+    width: 100%;
+}
         .sudoku-cell {
             aspect-ratio: 1;
             border: 1px solid #ddd;
@@ -649,10 +656,10 @@
     </script>
 
     <!-- Difficulty Selection Modal -->
-    <div id="difficultyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="difficultyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-hidden">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4 border-2 border-orange-500 dark:border-orange-400">
             <!-- Main Title -->
-            <div class="text-center mb-6">
+            <div class="text-center mb-4">
                 <h1 class="text-3xl font-bold text-primary dark:text-orange-400 mb-2">Mascot Sudoku</h1>
                 <h2 class="text-lg font-semibold text-primary dark:text-orange-300">Choose Difficulty</h2>
             </div>
@@ -671,10 +678,10 @@
                 <button onclick="startGame('trial')" class="px-6 py-3 bg-green-500 dark:bg-green-600 text-white rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-colors shadow-md">
                     🎯 4x4 Trial Mode
                 </button>
-                <button onclick="startGame('six')" class="px-6 py-3 bg-red-600 dark:bg-red-700 text-white rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-colors shadow-md">
+                <button onclick="startGame('six')" class="px-6 py-3 bg-primary dark:bg-orange-700 text-white rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-colors shadow-md">
                     🔥 6x6 Mode
                 </button>
-                <button onclick="startGame('easy')" class="px-6 py-3 bg-primary dark:bg-orange-500 text-white rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-colors shadow-md">
+                <button onclick="startGame('easy')" class="px-6 py-3 bg-red-600 dark:bg-red-500 text-white rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-colors shadow-md">
                     🌟 9x9 Mode
                 </button>
             </div>
@@ -684,7 +691,7 @@
                 <!-- Explanation Text -->
                 <div class="text-center mb-3">
                     <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                        🏆 Win 10 Easy & Hard mode games<br>
+                        🏆 Win 10 6x6 & 9x9 mode games<br>
                         to unlock a special mascot gift!
                     </p>
                 </div>
@@ -779,7 +786,7 @@
     <div class="h-8"></div>
 
     <!-- Main Game Container -->
-    <div id="gameContainer" class="max-w-md mx-auto p-4 hidden">
+    <div id="gameContainer" class="max-w-md mx-auto p-4 hidden overflow-hidden">
         <!-- Header -->
         <div class="flex items-center justify-between mb-3 relative min-h-[44px]">
             <!-- Left: Back Button -->
@@ -3512,7 +3519,7 @@ function findHiddenSingles() {
                 };
                 
                 // Check for gift eligibility
-                const total9x9Wins = victoryStats.easy + victoryStats.hard;
+                const total9x9Wins = (victoryStats.six || 0) + (victoryStats.easy || 0);
                 let giftMessage = '';
                 
                 if (total9x9Wins >= 10 && !victoryStats.giftClaimed) {
@@ -3569,7 +3576,7 @@ function findHiddenSingles() {
                         </div>
                         
                         <div class="mt-3 text-xs text-primary">
-                            <p>Victory Count: Easy ${victoryStats.easy} | Hard ${victoryStats.hard}</p>
+                            <p>Victory Count: 6x6 ${victoryStats.six || 0} | 9x9 ${victoryStats.easy || 0}</p>
                             <p>Total 9x9 Wins: ${total9x9Wins}/10 for gift</p>
                         </div>
                         ${giftMessage}
@@ -3600,7 +3607,12 @@ function findHiddenSingles() {
 
         async function startGame(difficulty) {
             console.log(`🚀 Starting ${difficulty} game with pre-generated puzzles...`);
-            
+            let seed = null;
+             if (difficulty === 'daily') {
+                    seed = getDailySeed(); // 使用每日種子
+                    difficulty = 'medium'; // 每日挑戰預設為中等難度
+             }
+
             // Initialize audio on first user interaction
             if (!audioContext) {
                 initAudio();
@@ -3779,7 +3791,7 @@ function findHiddenSingles() {
 
         // Simplified gift button click handler
         function handleSimplifiedGiftClick() {
-            const total9x9Wins = victoryStats.easy + victoryStats.hard;
+            const total9x9Wins = (victoryStats.six || 0) + (victoryStats.easy || 0);
             
             console.log('🎁 === Gift Button Clicked ===');
             console.log(`Total 9x9 wins: ${total9x9Wins}`);
@@ -3807,7 +3819,7 @@ function findHiddenSingles() {
 
         // Update gift button display and styling
         function updateGiftButtonDisplay() {
-            const total9x9Wins = victoryStats.easy + victoryStats.hard;
+            const total9x9Wins = (victoryStats.six || 0) + (victoryStats.easy || 0);
             const giftButton = document.getElementById('giftButton');
             
             if (!giftButton) return;
@@ -4191,12 +4203,12 @@ function findHiddenSingles() {
                         <!-- Stats -->
                         <div class="grid grid-cols-2 gap-3 mb-6">
                             <div class="bg-orange-100 dark:bg-orange-900 rounded p-3 text-center">
-                                <div class="text-xs font-bold text-orange-600 dark:text-orange-400 mb-1">Easy</div>
-                                <div class="text-2xl font-bold text-primary">${victoryStats.easy}</div>
+                                <div class="text-xs font-bold text-orange-600 dark:text-orange-400 mb-1">6x6</div>
+                                <div class="text-2xl font-bold text-primary">${victoryStats.six || 0}</div>
                             </div>
                             <div class="bg-red-100 dark:bg-red-900 rounded p-3 text-center">
-                                <div class="text-xs font-bold text-red-600 dark:text-red-400 mb-1">Hard</div>
-                                <div class="text-2xl font-bold text-primary">${victoryStats.hard}</div>
+                                <div class="text-xs font-bold text-red-600 dark:text-red-400 mb-1">9x9</div>
+                                <div class="text-2xl font-bold text-primary">${victoryStats.easy || 0}</div>
                             </div>
                         </div>
                         
@@ -4814,7 +4826,7 @@ function findHiddenSingles() {
             
             // Generate challenge text
             const difficultyEmoji = difficulty === 'trial' ? '🎯' : difficulty === 'easy' ? '🌟' : '🔥';
-            const gameUrl = 'https://poe.com/MascotSudokuGMMUnoff';
+            const gameUrl = 'http://mascot-sudoku-469.vercel.app/';
             const message = `${difficultyEmoji} I challenge you to solve this Mascot Sudoku puzzle! 🧩\n\n` +
                            `Challenge Code: ${challengeCode}\n` +
                            `Difficulty: ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} Mode\n` +
@@ -5862,6 +5874,101 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 100);
 });
 
+// =============================================================================
+// 📊 STATS MANAGER (Local Storage)
+// =============================================================================
+const StatsManager = {
+    // 預設數據結構
+    getStats() {
+        const defaultStats = {
+            gamesPlayed: 0,
+            wins: 0,
+            bestTime: null, // 秒數
+            lastWinDate: null,
+            currentStreak: 0
+        };
+        const saved = localStorage.getItem('sudoku_stats');
+        return saved ? JSON.parse(saved) : defaultStats;
+    },
+
+    saveStats(stats) {
+        localStorage.setItem('sudoku_stats', JSON.stringify(stats));
+        // TODO: 之後整合 Supabase 時，在這裡呼叫同步函數
+    },
+
+    updateGameResult(won, timeSeconds) {
+        const stats = this.getStats();
+        stats.gamesPlayed++;
+        
+        if (won) {
+            stats.wins++;
+            if (!stats.bestTime || timeSeconds < stats.bestTime) {
+                stats.bestTime = timeSeconds;
+            }
+            // 計算連續勝場 (簡單邏輯)
+            stats.currentStreak++;
+        } else {
+            stats.currentStreak = 0;
+        }
+        
+        this.saveStats(stats);
+    }
+};
+
+// =============================================================================
+// 📅 DAILY CHALLENGE GENERATOR
+// =============================================================================
+function getDailySeed() {
+    const today = new Date().toDateString(); // 例如 "Thu Jul 09 2026"
+    // 將日期字串轉換為數字種子
+    let seed = 0;
+    for (let i = 0; i < today.length; i++) {
+        seed += today.charCodeAt(i);
+    }
+    return seed;
+}
+
+
+// 遊戲獲勝時
+function onWin(timeTaken) {
+    StatsManager.updateGameResult(true, timeTaken);
+    // 顯示統計數據到 Modal 內
+    showGameEndModal(true, timeTaken); 
+}
+
+// 輔助函數：切換 Body 捲動狀態
+function toggleBodyScroll(lock) {
+    if (lock) {
+        document.body.classList.add('body-no-scroll');
+    } else {
+        document.body.classList.remove('body-no-scroll');
+    }
+}
+
+// 修改你開啟 Modal 的函數（範例）
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('hidden');
+        // 除了 gameEndModal 之外，通通鎖死捲動
+        if (modalId !== 'gameEndModal') {
+            toggleBodyScroll(true);
+        }
+    }
+}
+
+// 修改你關閉 Modal 的函數（範例）
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('hidden');
+        // 檢查是否還有其他 Modal 開啟，如果沒有，就解鎖
+        const activeModals = document.querySelectorAll('.fixed:not(.hidden)');
+        if (activeModals.length === 0) {
+            toggleBodyScroll(false);
+        }
+    }
+}
 console.log("%c停！別看我的原始碼，快去玩吧！", "color: blue; font-size: 30px; font-weight: bold;");
     </script>
 </body>
