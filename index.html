@@ -108,18 +108,16 @@
             justify-content: center;
             font-weight: bold;
         }
-        /* Default sizes for 9x9 games - smaller to prevent overlap */
-        .icon-img {
-            width: 30px;
-            height: 30px;
-            border-radius: 4px;
+        /* 使用百分比，讓圖片自動適應格子大小 */
+        .icon-img, .grid-icon {
+            width: 80%;     /* 佔滿格子的 85% */
+            height: 80%;    /* 佔滿格子的 85% */
+            max-width: 45px; /* 加上上限，避免在大螢幕上過度拉伸 */
+            max-height: 45px;
+            border-radius: 8%; /* 使用百分比圓角，看起來更自然 */
             object-fit: cover;
-        }
-        .grid-icon {
-            width: 33px;
-            height: 33px;
-            border-radius: 8px;
-            object-fit: cover;
+            margin: auto;   /* 確保圖片在格子內居中 */
+            display: block;
         }
         
         /* Larger sizes for 4x4 trial mode */
