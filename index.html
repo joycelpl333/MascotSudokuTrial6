@@ -48,6 +48,10 @@
             background-repeat: no-repeat;
             background-attachment: scroll;
             min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
+            -webkit-user-select: none;  /* Safari */
+            -moz-user-select: none;     /* Firefox */
+            -ms-user-select: none;      /* IE10+/Edge */
+            user-select: none;          /* 標準語法 */
         }
         .dark body {
             background-image: url('https://i.urusai.cc/PjGT3.jpg');
@@ -92,7 +96,13 @@
         .thick-border-top { border-top: 3px solid #ffa500; }
         .highlight-cell { background-color: #ffeaa7 !important; }
         .dark .highlight-cell { background-color: #4a4a2a !important; }
-        .selected-cell { border: 2px solid #ffa500 !important; }
+        .selected-cell { 
+outline: 3px solid #00d2ff !important; /* 使用 outline 代替 border，可完美包裹在紅綠底色之外 */
+            outline-offset: -3px;  /* 讓藍色框向內貼齊，不影響網格排列 */
+            border: 1px solid #ddd !important;  /* 保持原本的基礎邊框 */
+            z-index: 10;  /* 確保選中的格子框線永遠在最上層 */
+            position: relative;
+        }
         .notes-text { 
             font-size: 8px; 
             line-height: 1;
@@ -140,6 +150,11 @@
             max-width: 100%; /* Prevent overflow */
             
         }
+img, button, .sudoku-cell {
+    -webkit-user-drag: none;    /* Webkit 核心瀏覽器 (Chrome/Safari) */
+    user-drag: none;
+    -webkit-touch-callout: none; /* 禁用 iOS 長按圖片彈出選單 */
+}
         .icon-container {
             position: relative;
             display: flex;
@@ -3601,10 +3616,10 @@ function findHiddenSingles() {
             }
             
             modal.classList.remove('hidden');
-			const modalContentContainer = gameEndModal.querySelector('.overflow-y-auto');
-			if (modalContentContainer) {
-			    modalContentContainer.scrollTop = 0;
-			}
+		const modalContentContainer = gameEndModal.querySelector('.overflow-y-auto');
+if (modalContentContainer) {
+    modalContentContainer.scrollTop = 0;
+}
         }
 
         async function startGame(difficulty) {
