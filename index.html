@@ -3601,6 +3601,10 @@ function findHiddenSingles() {
             }
             
             modal.classList.remove('hidden');
+			const modalContentContainer = gameEndModal.querySelector('.overflow-y-auto');
+			if (modalContentContainer) {
+			    modalContentContainer.scrollTop = 0;
+			}
         }
 
         async function startGame(difficulty) {
